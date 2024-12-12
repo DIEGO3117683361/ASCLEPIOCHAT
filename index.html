@@ -146,6 +146,26 @@
             background: #000;
             color: #fff;
         }
+
+        .button-container {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .source-button {
+            padding: 10px 20px;
+            background-color: #444;
+            color: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            border: none;
+        }
+
+        .source-button:hover {
+            background-color: #555;
+        }
+
     </style>
 </head>
 <body>
@@ -167,10 +187,14 @@
         const darkModeToggle = document.getElementById('darkModeToggle');
         const body = document.body;
         let lastUnknownQuery = "";
+        let isWaitingForSource = false; // Variable para verificar si estamos esperando una fuente
 
         darkModeToggle.addEventListener('click', () => {
             body.classList.toggle('dark-mode');
         });
+
+        // Saludo inicial
+        appendBotMessage("¡Hola! Soy ASCLEPIO. ¿En qué puedo ayudarte hoy?");
 
         function sendMessage() {
             const userInput = document.getElementById('userInput');
@@ -212,40 +236,63 @@
         }
 
         function processMessage(message) {
-            if (isMathOperation(message)) {
-                try {
-                    const result = eval(message);
-                    appendBotMessage(`El resultado es: ${result}`);
-                } catch {
-                    appendBotMessage("No puedo calcular eso, por favor verifica tu expresión.");
-                }
-            } else if (message.toLowerCase().includes("hemograma") || message.toLowerCase().includes("perfil lipídico")) {
-                appendBotMessage("Por favor, envíame los valores para analizar.");
-            } else if (message.match(/\d+/)) {
-                const value = parseFloat(message);
-                analyzeLabValue(value);
-            } else if (message.toLowerCase() === "sí" && lastUnknownQuery) {
-                const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(lastUnknownQuery)}`;
-                window.open(googleSearchUrl, '_blank');
-                appendBotMessage("Buscando en Google...");
+            if (isWaitingForSource) {
+                // Si estamos esperando una fuente, manejamos la elección del usuario
+                handleSourceSelection(message);
+            } else if (message.toLowerCase() === "gracias" || message.toLowerCase() === "muchas gracias") {
+                appendBotMessage("¡De nada! Siempre estoy aquí para ayudarte.");
             } else {
                 lastUnknownQuery = message;
-                appendBotMessage("Lo siento, no entiendo eso. Aún estoy aprendiendo, ¿quieres que lo busque en Google? (Responde 'sí' para buscar)");
+                appendBotMessage("Lo siento, aún no se como responder a eso, pero te puedo ayudar a buscarlo. Haz clic en uno de las megabases de datos para continuar.");
+                showSourceButtons(); // Muestra los botones para que el usuario elija
+                isWaitingForSource = true; // Ahora estamos esperando la respuesta sobre la fuente
             }
         }
 
-        function isMathOperation(input) {
-            return /^[0-9+\-*/().\s]+$/.test(input);
+        function showSourceButtons() {
+            const buttonContainer = document.createElement('div');
+            buttonContainer.classList.add('button-container');
+            
+            const googleButton = document.createElement('button');
+            googleButton.classList.add('source-button');
+            googleButton.textContent = 'Google';
+            googleButton.onclick = () => handleSourceSelection('google');
+            
+            const academicButton = document.createElement('button');
+            academicButton.classList.add('source-button');
+            academicButton.textContent = 'Google Académico';
+            academicButton.onclick = () => handleSourceSelection('académico');
+            
+            const wikipediaButton = document.createElement('button');
+            wikipediaButton.classList.add('source-button');
+            wikipediaButton.textContent = 'Wikipedia';
+            wikipediaButton.onclick = () => handleSourceSelection('wikipedia');
+            
+            buttonContainer.appendChild(googleButton);
+            buttonContainer.appendChild(academicButton);
+            buttonContainer.appendChild(wikipediaButton);
+            document.getElementById('messages').appendChild(buttonContainer);
         }
 
-        function analyzeLabValue(value) {
-            if (value < 3.5) {
-                appendBotMessage("El valor parece bajo. Te sugiero consultarlo con un especialista.");
-            } else if (value > 5.5) {
-                appendBotMessage("El valor parece alto. Te sugiero verificar con un profesional de la salud.");
-            } else {
-                appendBotMessage("El valor está dentro del rango normal.");
+        function handleSourceSelection(source) {
+            source = source.toLowerCase().trim();
+            if (source === "google") {
+                appendBotMessage("Buscando en Google...");
+                const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(lastUnknownQuery)}`;
+                window.open(googleSearchUrl, '_blank');
+            } else if (source === "académico") {
+                appendBotMessage("Buscando en Google Académico...");
+                const googleScholarUrl = `https://scholar.google.com/scholar?q=${encodeURIComponent(lastUnknownQuery)}`;
+                window.open(googleScholarUrl, '_blank');
+            } else if (source === "wikipedia") {
+                appendBotMessage("Buscando en Wikipedia...");
+                const wikipediaUrl = `https://es.wikipedia.org/wiki/${encodeURIComponent(lastUnknownQuery)}`;
+                window.open(wikipediaUrl, '_blank');
             }
+
+            // Limpiar la espera de fuente y los botones
+            isWaitingForSource = false;
+            document.querySelector('.button-container').remove();
         }
 
         document.getElementById('userInput').addEventListener('keyup', (event) => {
@@ -256,3 +303,4 @@
     </script>
 </body>
 </html>
+
