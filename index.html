@@ -166,6 +166,7 @@
     <script>
         const darkModeToggle = document.getElementById('darkModeToggle');
         const body = document.body;
+        let lastUnknownQuery = "";
 
         darkModeToggle.addEventListener('click', () => {
             body.classList.toggle('dark-mode');
@@ -176,20 +177,23 @@
             const messageText = userInput.value.trim();
 
             if (messageText) {
-                const messageContainer = document.createElement('div');
-                messageContainer.classList.add('message', 'user');
-                messageContainer.innerHTML = `<span>${messageText}</span>`;
-                document.getElementById('messages').appendChild(messageContainer);
-
+                appendUserMessage(messageText);
                 userInput.value = '';
 
                 setTimeout(() => {
-                    displayBotMessage("Lo siento por el momento no puedo interactuar contigo, te avisaré cuando esté disponible");
+                    processMessage(messageText);
                 }, 1000);
             }
         }
 
-        function displayBotMessage(text) {
+        function appendUserMessage(text) {
+            const messageContainer = document.createElement('div');
+            messageContainer.classList.add('message', 'user');
+            messageContainer.innerHTML = `<span>${text}</span>`;
+            document.getElementById('messages').appendChild(messageContainer);
+        }
+
+        function appendBotMessage(text) {
             const messageContainer = document.createElement('div');
             messageContainer.classList.add('message');
             const messageText = document.createElement('span');
@@ -206,6 +210,49 @@
                 }
             }, 50);
         }
+
+        function processMessage(message) {
+            if (isMathOperation(message)) {
+                try {
+                    const result = eval(message);
+                    appendBotMessage(`El resultado es: ${result}`);
+                } catch {
+                    appendBotMessage("No puedo calcular eso, por favor verifica tu expresión.");
+                }
+            } else if (message.toLowerCase().includes("hemograma") || message.toLowerCase().includes("perfil lipídico")) {
+                appendBotMessage("Por favor, envíame los valores para analizar.");
+            } else if (message.match(/\d+/)) {
+                const value = parseFloat(message);
+                analyzeLabValue(value);
+            } else if (message.toLowerCase() === "sí" && lastUnknownQuery) {
+                const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(lastUnknownQuery)}`;
+                window.open(googleSearchUrl, '_blank');
+                appendBotMessage("Buscando en Google...");
+            } else {
+                lastUnknownQuery = message;
+                appendBotMessage("Lo siento, no entiendo eso. Aún estoy aprendiendo, ¿quieres que lo busque en Google? (Responde 'sí' para buscar)");
+            }
+        }
+
+        function isMathOperation(input) {
+            return /^[0-9+\-*/().\s]+$/.test(input);
+        }
+
+        function analyzeLabValue(value) {
+            if (value < 3.5) {
+                appendBotMessage("El valor parece bajo. Te sugiero consultarlo con un especialista.");
+            } else if (value > 5.5) {
+                appendBotMessage("El valor parece alto. Te sugiero verificar con un profesional de la salud.");
+            } else {
+                appendBotMessage("El valor está dentro del rango normal.");
+            }
+        }
+
+        document.getElementById('userInput').addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
     </script>
 </body>
 </html>
