@@ -60,6 +60,7 @@
             padding: 10px;
             border-radius: 10px;
             max-width: 80%;
+            white-space: pre-wrap; /* Respetar espacios y saltos de línea */
         }
 
         .message.user span {
@@ -89,6 +90,48 @@
             cursor: pointer;
             margin-left: 10px;
         }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table, th, td {
+            border: 1px solid white;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        ul, ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        .typing-indicator {
+            display: inline-block;
+            background: #333;
+            padding: 10px;
+            border-radius: 10px;
+            color: #fff;
+            font-style: italic;
+        }
+
+        .typing-indicator span {
+            animation: blink 1.4s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -112,6 +155,9 @@
             appendUserMessage(messageText);
             userInput.value = '';
 
+            // Mostrar indicador de "escribiendo"
+            const typingIndicator = showTypingIndicator();
+
             try {
                 const response = await fetch('https://magicloops.dev/api/loop/1f758d92-e471-4272-b993-b7db9f72a008/run', {
                     method: 'POST',
@@ -123,10 +169,13 @@
                 console.log("Respuesta de la API:", responseData);
                 
                 const botResponse = responseData.answer || JSON.stringify(responseData);
-                appendBotMessage(botResponse);
+                typeText(botResponse);
             } catch (error) {
                 console.error("Error en la solicitud:", error);
                 appendBotMessage("Error al conectar con la API.");
+            } finally {
+                // Ocultar indicador de "escribiendo"
+                hideTypingIndicator(typingIndicator);
             }
         }
 
@@ -144,7 +193,61 @@
             messageContainer.classList.add('message');
             messageContainer.innerHTML = `<span>${text}</span>`;
             messagesContainer.appendChild(messageContainer);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight; // Hace scroll hacia abajo
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function formatText(text) {
+            return text
+                .replace(/\n/g, '<br>') // Saltos de línea
+                .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') // Negrita
+                .replace(/\*(.*?)\*/g, '<i>$1</i>') // Cursiva
+                .replace(/### (.*?)\n/g, '<h3>$1</h3>') // Títulos h3
+                .replace(/- (.*?)\n/g, '<li>$1</li>') // Listas
+                .replace(/\n(<li>.*?<\/li>)/g, '<ul>$1</ul>') // Convertir a lista
+                .replace(/\|(.+?)\|/g, function(match) {
+                    const rows = match.split('\n');
+                    let table = '<table>';
+                    rows.forEach(row => {
+                        if (row.trim()) {
+                            table += '<tr>' + row.split('|').map(cell => `<td>${cell.trim()}</td>`).join('') + '</tr>';
+                        }
+                    });
+                    table += '</table>';
+                    return table;
+                });
+        }
+
+        function typeText(text) {
+            const formattedText = formatText(text);
+            const messagesContainer = document.getElementById('messages');
+            const messageContainer = document.createElement('div');
+            messageContainer.classList.add('message');
+            messagesContainer.appendChild(messageContainer);
+
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < formattedText.length) {
+                    messageContainer.innerHTML = `<span>${formattedText.substring(0, i + 1)}</span>`;
+                    i++;
+                    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 20); // Ajusta la velocidad de escritura aquí
+        }
+
+        function showTypingIndicator() {
+            const messagesContainer = document.getElementById('messages');
+            const typingContainer = document.createElement('div');
+            typingContainer.classList.add('message');
+            typingContainer.innerHTML = `<span class="typing-indicator"><span>.</span><span>.</span><span>.</span></span>`;
+            messagesContainer.appendChild(typingContainer);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            return typingContainer;
+        }
+
+        function hideTypingIndicator(typingIndicator) {
+            typingIndicator.remove();
         }
 
         document.getElementById('userInput').addEventListener('keyup', (event) => {
