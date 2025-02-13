@@ -41,7 +41,6 @@
         .messages {
             height: 300px;
             overflow-y: auto;
-            padding-right: 10px;
             display: flex;
             flex-direction: column;
             gap: 10px;
@@ -50,7 +49,6 @@
         .message {
             display: flex;
             justify-content: flex-start;
-            align-items: center;
         }
 
         .message.user {
@@ -58,7 +56,6 @@
         }
 
         .message span {
-            display: inline-block;
             background: #333;
             padding: 10px;
             border-radius: 10px;
@@ -92,86 +89,9 @@
             cursor: pointer;
             margin-left: 10px;
         }
-
-        .dark-mode-toggle {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            background: none;
-            border: 2px solid #fff;
-            border-radius: 20px;
-            cursor: pointer;
-            width: 40px;
-            height: 20px;
-            display: flex;
-            align-items: center;
-            padding: 2px;
-        }
-
-        .dark-mode-toggle .circle {
-            width: 16px;
-            height: 16px;
-            background: #fff;
-            border-radius: 50%;
-            transition: transform 0.3s;
-        }
-
-        .dark-mode .dark-mode-toggle .circle {
-            transform: translateX(20px);
-        }
-
-        .dark-mode {
-            background-color: #fff;
-            color: #000;
-        }
-
-        .dark-mode .chatbox {
-            background: #f0f0f0;
-        }
-
-        .dark-mode .message span {
-            background: #e0e0e0;
-        }
-
-        .dark-mode .message.user span {
-            background: #d0d0d0;
-        }
-
-        .dark-mode .input-box input {
-            background: #fff;
-            color: #000;
-        }
-
-        .dark-mode .input-box button {
-            background: #000;
-            color: #fff;
-        }
-
-        .button-container {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .source-button {
-            padding: 10px 20px;
-            background-color: #444;
-            color: #fff;
-            border-radius: 10px;
-            cursor: pointer;
-            border: none;
-        }
-
-        .source-button:hover {
-            background-color: #555;
-        }
-
     </style>
 </head>
 <body>
-    <div class="dark-mode-toggle" id="darkModeToggle">
-        <div class="circle"></div>
-    </div>
     <div class="container">
         <div class="title">A S C L E P I O</div>
         <div class="chatbox">
@@ -184,115 +104,47 @@
     </div>
 
     <script>
-        const darkModeToggle = document.getElementById('darkModeToggle');
-        const body = document.body;
-        let lastUnknownQuery = "";
-        let isWaitingForSource = false; // Variable para verificar si estamos esperando una fuente
-
-        darkModeToggle.addEventListener('click', () => {
-            body.classList.toggle('dark-mode');
-        });
-
-        // Saludo inicial
-        appendBotMessage("¡Hola! Soy ASCLEPIO. ¿En qué puedo ayudarte hoy?");
-
-        function sendMessage() {
+        async function sendMessage() {
             const userInput = document.getElementById('userInput');
             const messageText = userInput.value.trim();
+            if (!messageText) return;
 
-            if (messageText) {
-                appendUserMessage(messageText);
-                userInput.value = '';
+            appendUserMessage(messageText);
+            userInput.value = '';
 
-                setTimeout(() => {
-                    processMessage(messageText);
-                }, 1000);
+            try {
+                const response = await fetch('https://magicloops.dev/api/loop/1f758d92-e471-4272-b993-b7db9f72a008/run', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ question: messageText })
+                });
+                
+                const responseData = await response.json();
+                console.log("Respuesta de la API:", responseData);
+                
+                const botResponse = responseData.answer || JSON.stringify(responseData);
+                appendBotMessage(botResponse);
+            } catch (error) {
+                console.error("Error en la solicitud:", error);
+                appendBotMessage("Error al conectar con la API.");
             }
         }
 
         function appendUserMessage(text) {
+            const messagesContainer = document.getElementById('messages');
             const messageContainer = document.createElement('div');
             messageContainer.classList.add('message', 'user');
             messageContainer.innerHTML = `<span>${text}</span>`;
-            document.getElementById('messages').appendChild(messageContainer);
+            messagesContainer.appendChild(messageContainer);
         }
 
         function appendBotMessage(text) {
+            const messagesContainer = document.getElementById('messages');
             const messageContainer = document.createElement('div');
             messageContainer.classList.add('message');
-            const messageText = document.createElement('span');
-            messageContainer.appendChild(messageText);
-            document.getElementById('messages').appendChild(messageContainer);
-
-            let index = 0;
-            const typingEffect = setInterval(() => {
-                messageText.textContent += text[index];
-                index++;
-
-                if (index >= text.length) {
-                    clearInterval(typingEffect);
-                }
-            }, 50);
-        }
-
-        function processMessage(message) {
-            if (isWaitingForSource) {
-                // Si estamos esperando una fuente, manejamos la elección del usuario
-                handleSourceSelection(message);
-            } else if (message.toLowerCase() === "gracias" || message.toLowerCase() === "muchas gracias") {
-                appendBotMessage("¡De nada! Siempre estoy aquí para ayudarte.");
-            } else {
-                lastUnknownQuery = message;
-                appendBotMessage("Lo siento, aún no se como responder a eso, pero te puedo ayudar a buscarlo. Haz clic en uno de las megabases de datos para continuar.");
-                showSourceButtons(); // Muestra los botones para que el usuario elija
-                isWaitingForSource = true; // Ahora estamos esperando la respuesta sobre la fuente
-            }
-        }
-
-        function showSourceButtons() {
-            const buttonContainer = document.createElement('div');
-            buttonContainer.classList.add('button-container');
-            
-            const googleButton = document.createElement('button');
-            googleButton.classList.add('source-button');
-            googleButton.textContent = 'Google';
-            googleButton.onclick = () => handleSourceSelection('google');
-            
-            const academicButton = document.createElement('button');
-            academicButton.classList.add('source-button');
-            academicButton.textContent = 'Google Académico';
-            academicButton.onclick = () => handleSourceSelection('académico');
-            
-            const wikipediaButton = document.createElement('button');
-            wikipediaButton.classList.add('source-button');
-            wikipediaButton.textContent = 'Wikipedia';
-            wikipediaButton.onclick = () => handleSourceSelection('wikipedia');
-            
-            buttonContainer.appendChild(googleButton);
-            buttonContainer.appendChild(academicButton);
-            buttonContainer.appendChild(wikipediaButton);
-            document.getElementById('messages').appendChild(buttonContainer);
-        }
-
-        function handleSourceSelection(source) {
-            source = source.toLowerCase().trim();
-            if (source === "google") {
-                appendBotMessage("Buscando en Google...");
-                const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(lastUnknownQuery)}`;
-                window.open(googleSearchUrl, '_blank');
-            } else if (source === "académico") {
-                appendBotMessage("Buscando en Google Académico...");
-                const googleScholarUrl = `https://scholar.google.com/scholar?q=${encodeURIComponent(lastUnknownQuery)}`;
-                window.open(googleScholarUrl, '_blank');
-            } else if (source === "wikipedia") {
-                appendBotMessage("Buscando en Wikipedia...");
-                const wikipediaUrl = `https://es.wikipedia.org/wiki/${encodeURIComponent(lastUnknownQuery)}`;
-                window.open(wikipediaUrl, '_blank');
-            }
-
-            // Limpiar la espera de fuente y los botones
-            isWaitingForSource = false;
-            document.querySelector('.button-container').remove();
+            messageContainer.innerHTML = `<span>${text}</span>`;
+            messagesContainer.appendChild(messageContainer);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight; // Hace scroll hacia abajo
         }
 
         document.getElementById('userInput').addEventListener('keyup', (event) => {
@@ -303,4 +155,3 @@
     </script>
 </body>
 </html>
-
