@@ -381,6 +381,51 @@
             opacity: 0.9;
         }
 
+        /* Aurora Vision Button */
+        .vision-button {
+            position: relative;
+            padding: 0 24px;
+            border: none;
+            border-radius: 24px;
+            background: linear-gradient(45deg, #696969, #000000, #373737, #000000);
+            background-size: 300% 300%;
+            color: white;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            overflow: hidden;
+            animation: aurora 8s ease infinite;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .vision-button::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            right: -50%;
+            bottom: -50%;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1), rgba(255,255,255,0));
+            transform: rotate(45deg);
+            animation: shine 3s infinite;
+        }
+
+        @keyframes aurora {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) rotate(45deg); }
+        }
+
+        .vision-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 15px rgba(0, 204, 255, 0.5);
+        }
+
         /* Vision suggestion banner */
         .vision-banner {
             position: absolute;
@@ -485,7 +530,7 @@
             }
         }
 
-        @media (max-width: 480px) {
+        @media (max-width: 768px) {
             .header {
                 padding: 12px 16px;
             }
@@ -500,6 +545,22 @@
             
             .message {
                 max-width: 85%;
+            }
+
+            .vision-button {
+                padding: 0 16px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .input-wrapper {
+                gap: 8px;
+            }
+
+            .vision-button {
+                padding: 0 12px;
+                font-size: 12px;
             }
         }
     </style>
@@ -534,7 +595,7 @@
                         <span>🌓</span> Cambiar tema
                     </div>
                     <div class="dropdown-item" onclick="clearChat()">
-                        <span>🗑️</span> Borrar conversación
+                        <span>🗑️</span> Limpiar chat
                     </div>
                 </div>
             </div>
@@ -551,11 +612,12 @@
                 <div class="vision-banner-text">
                     ¿Quieres crear imágenes con Asclepio Vision?
                 </div>
-                <a class="vision-banner-link" href="https://diego3117683361.github.io/ASCLEPIOBIOATLAS/" target="_blank">Abrir Vision</a>
+                <a class="vision-banner-link" href="https://diego3117683361.github.io/ASCLEPIOBIOATLAS/" target="_blank">Abrir Asclepio Vision</a>
                 <button class="close-banner" onclick="hideVisionBanner()">✕</button>
             </div>
             <div class="input-wrapper">
-                <input type="text" class="message-input" id="userInput" placeholder="Pregúntame algo..." autocomplete="off">
+                <input type="text" class="message-input" id="userInput" placeholder="Escribe un mensaje..." autocomplete="off">
+                <button class="vision-button" onclick="window.open('https://diego3117683361.github.io/ASCLEPIOBIOATLAS/', '_blank')">VISION</button>
                 <button class="send-button" onclick="sendMessage()">Enviar</button>
             </div>
         </div>
@@ -914,19 +976,58 @@
             }
         }
 
-        // Text formatting
+        
+        // Text formatting - Versión mejorada
         function formatText(text) {
-            // Basic Markdown formatting
-            return text
-                .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>') // bold
-                .replace(/\*(.*?)\*/g, '<i>$1</i>') // italic
-                .replace(/\n/g, '<br>') // line breaks
-                .replace(/### (.*?)(\n|$)/g, '<h3>$1</h3>') // headings
-                .replace(/- (.*?)(\n|$)/g, '<li>$1</li>') // list items
-                .replace(/(<li>.*<\/li>)/g, '<ul>$1</ul>') // wrap lists
-                .replace(/`(.*?)`/g, '<code>$1</code>') // code
-                .replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>'); // links
+            // Convertir saltos de línea reales a <br>
+            text = text.replace(/\n/g, '<br>');
+            
+            // Encabezados Markdown
+            text = text.replace(/^# (.*?)(<br>|$)/gm, '<h1>$1</h1>');
+            text = text.replace(/^## (.*?)(<br>|$)/gm, '<h2>$1</h2>');
+            text = text.replace(/^### (.*?)(<br>|$)/gm, '<h3>$1</h3>');
+            
+            // Negritas y cursivas
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+            text = text.replace(/\_\_(.*?)\_\_/g, '<strong>$1</strong>');
+            text = text.replace(/\_(.*?)\_/g, '<em>$1</em>');
+            
+            // Listas no ordenadas
+            text = text.replace(/^[\*\-+] (.*?)(<br>|$)/gm, '<li>$1</li>');
+            text = text.replace(/(<li>.*<\/li>)+/g, function(match) {
+                return '<ul>' + match + '</ul>';
+            });
+            
+            // Listas ordenadas
+            text = text.replace(/^\d+\. (.*?)(<br>|$)/gm, '<li>$1</li>');
+            text = text.replace(/(<li>.*<\/li>)+/g, function(match) {
+                return '<ol>' + match + '</ol>';
+            });
+            
+            // Código en línea
+            text = text.replace(/`(.*?)`/g, '<code>$1</code>');
+            
+            // Bloques de código (multilínea)
+            text = text.replace(/```([a-z]*)\n([\s\S]*?)\n```/g, function(match, lang, code) {
+                return '<pre><code class="language-' + lang + '">' + code + '</code></pre>';
+            });
+            
+            // Enlaces
+            text = text.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
+            
+            // Imágenes
+            text = text.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:10px 0;">');
+            
+            // Líneas horizontales
+            text = text.replace(/^\-\-\-$/gm, '<hr>');
+            
+            // Citas
+            text = text.replace(/^> (.*?)(<br>|$)/gm, '<blockquote>$1</blockquote>');
+            
+            return text;
         }
+
 
         // Initialize the app
         init();
