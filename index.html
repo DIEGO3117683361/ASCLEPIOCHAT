@@ -20,6 +20,7 @@
             --code-btn-color: #4ECDC4;
             --analyze-btn-color: #FFD166;
             --attachment-indicator-bg: #e8b923;
+            --attachment-active-bg: #4CAF50; /* Green background for active attachment button */
         }
 
         [data-theme="dark"] {
@@ -34,6 +35,7 @@
             --vision-gradient: linear-gradient(45deg, #a1a1a1, #4a4a4a, #7d7d7d, #4a4a4a);
             --welcome-color: #666666;
             --attachment-indicator-bg: #c49a1d;
+            --attachment-active-bg: #388E3C; /* Darker green for dark theme */
         }
 
         * {
@@ -886,12 +888,21 @@
             align-items: center;
         }
 
+        .input-box {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background-color: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            overflow: hidden;
+        }
+
         .message-input {
             flex: 1;
             padding: 14px 20px;
-            border: 1px solid var(--border-color);
-            border-radius: 24px;
-            background-color: var(--secondary-bg);
+            border: none;
+            background-color: transparent;
             color: var(--text-primary);
             font-size: 15px;
             outline: none;
@@ -909,10 +920,19 @@
             cursor: pointer;
             padding: 8px;
             border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+
+        .attachment-button.active {
+            background-color: var(--attachment-active-bg);
         }
 
         .attachment-button:hover {
             background-color: var(--secondary-bg);
+        }
+
+        .attachment-button.active:hover {
+            background-color: var(--attachment-active-bg);
         }
 
         .send-button {
@@ -928,6 +948,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            margin-right: 8px;
         }
 
         .send-button:hover {
@@ -1198,18 +1219,20 @@
                 <button class="cancel-button" onclick="cancelImageGeneration()">✕</button>
             </div>
             <div class="input-wrapper">
-                <input type="text" class="message-input" id="userInput" placeholder="Escribe un mensaje..." autocomplete="off">
-                <input type="file" id="attachmentInput" accept=".pdf,image/*" style="display: none;">
-                <button class="attachment-button" onclick="document.getElementById('attachmentInput').click()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <button class="attachment-button" id="attachmentButton" onclick="toggleAttachment()">
+                    <svg id="attachmentIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M12 4V20M4 12H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                 </button>
-                <button class="send-button" onclick="sendMessage()">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
+                <div class="input-box">
+                    <input type="text" class="message-input" id="userInput" placeholder="Escribe un mensaje..." autocomplete="off">
+                    <button class="send-button" onclick="sendMessage()">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 12H19M19 12L12 5M19 12L12 19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                </div>
+                <input type="file" id="attachmentInput" accept=".pdf,image/*" style="display: none;">
             </div>
         </div>
     </main>
@@ -1236,6 +1259,8 @@
         const attachmentInput = document.getElementById('attachmentInput');
         const attachmentIndicator = document.getElementById('attachmentIndicator');
         const attachmentName = document.getElementById('attachmentName');
+        const attachmentButton = document.getElementById('attachmentButton');
+        const attachmentIcon = document.getElementById('attachmentIcon');
 
         // State
         let currentChat = { id: generateId(), messages: [] };
@@ -1244,6 +1269,7 @@
         let hasUserSentMessage = false;
         let lastExtractedText = '';
         let currentAttachmentName = '';
+        let isAttachmentActive = false;
 
         // Initialize
         function init() {
@@ -1266,6 +1292,25 @@
             showWelcomeMessage();
         }
 
+        // Toggle attachment state
+        function toggleAttachment() {
+            if (isAttachmentActive) {
+                clearAttachment();
+                updateAttachmentButton(false);
+            } else {
+                attachmentInput.click();
+            }
+        }
+
+        // Update attachment button appearance
+        function updateAttachmentButton(active) {
+            isAttachmentActive = active;
+            attachmentButton.classList.toggle('active', active);
+            attachmentIcon.innerHTML = active ?
+                `<path d="M6 6L18 18M6 18L18 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>` :
+                `<path d="M12 4V20M4 12H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`;
+        }
+
         // Handle attachment
         async function handleAttachment(event) {
             const file = event.target.files[0];
@@ -1286,6 +1331,7 @@
                     lastExtractedText = extractedText;
                     currentAttachmentName = file.name;
                     showAttachmentIndicator();
+                    updateAttachmentButton(true);
                 } else {
                     alert('No se pudo extraer texto del archivo.');
                 }
@@ -1306,6 +1352,7 @@
             lastExtractedText = '';
             currentAttachmentName = '';
             attachmentIndicator.classList.remove('visible');
+            updateAttachmentButton(false);
         }
 
         async function extractTextFromPDF(file) {
@@ -1384,12 +1431,12 @@
                                 </svg>
                                 Crear un código
                             </button>
-                            <button class="welcome-btn welcome-btn-analyze" onclick="setInputText('Analiza profundidad de manera detallada')">
+                            <button class="welcome-btn welcome-btn-analyze" onclick="setInputText('Analiza el texto y dame un resumen en puntos clave')">
                                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                     <path d="M12 8V12L15 15" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
-                                Analizar a profundidad
+                                Resumir documento
                             </button>
                         </div>
                     </div>
@@ -1410,6 +1457,7 @@
                 lastExtractedText = '';
                 currentAttachmentName = '';
                 attachmentIndicator.classList.remove('visible');
+                updateAttachmentButton(false);
                 saveChats();
                 createNewChat();
                 settingsDropdown.classList.remove('visible');
@@ -1536,6 +1584,7 @@
                 lastExtractedText = '';
                 currentAttachmentName = '';
                 attachmentIndicator.classList.remove('visible');
+                updateAttachmentButton(false);
                 renderMessages([]);
                 settingsDropdown.classList.remove('visible');
                 saveChats();
@@ -1960,5 +2009,5 @@
         // Initialize the app
         init();
     </script>
-</body>
-    </html>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93155946fe7553af',t:'MTc0NDgyMzk3OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
