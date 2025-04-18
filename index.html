@@ -394,18 +394,18 @@
             opacity: 0.8;
         }
 
-        .message {
-            max-width: 75%;
-            padding: 12px 16px;
-            border-radius: 18px;
-            line-height: 1.5;
-            font-size: 15px;
-            animation: fadeIn 0.3s ease-out;
-            position: relative;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
+       .message {
+    max-width: 75%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    line-height: 1.5;
+    font-size: 15px;
+    animation: fadeIn 0.3s ease-out;
+    position: relative;
+    /* ✅ Eliminamos flex para permitir que los elementos fluyan verticalmente */
+    display: block;
+}
+
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -934,6 +934,22 @@
         .attachment-button.active:hover {
             background-color: var(--attachment-active-bg);
         }
+.message table {
+    border-collapse: collapse;
+    margin: 12px 0;
+    width: 100%;
+}
+
+.message th, .message td {
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.message th {
+    background-color: var(--secondary-bg);
+    font-weight: bold;
+}
 
         .send-button {
             padding: 0 20px;
@@ -1978,33 +1994,35 @@
         }
 
         function formatText(text) {
-            if (text.startsWith('<div class="generated-image-container">')) {
-                return text;
-            }
-            
-            text = text.replace(/\n\n+/g, '</p><p>');
-            text = text.replace(/\n/g, '<br>');
-            text = '<p>' + text + '</p>';
-            
-            text = text.replace(/^# (.*?)(<br>|$)/gm, '<h1>$1</h1>');
-            text = text.replace(/^## (.*?)(<br>|$)/gm, '<h2>$1</h2>');
-            text = text.replace(/^### (.*?)(<br>|$)/gm, '<h3>$1</h3>');
-            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-            text = text.replace(/\_\_(.*?)\_\_/g, '<strong>$1</strong>');
-            text = text.replace(/\_(.*?)\_/g, '<em>$1</em>');
-            text = text.replace(/^[\*\-+] (.*?)(<br>|$)/gm, '<li>$1</li>');
-            text = text.replace(/(<li>.*<\/li>)+/g, match => '<ul>' + match + '</ul>');
-            text = text.replace(/^\d+\. (.*?)(<br>|$)/gm, '<li>$1</li>');
-            text = text.replace(/(<li>.*<\/li>)+/g, match => '<ol>' + match + '</ol>');
-            text = text.replace(/`(.*?)`/g, '<code>$1</code>');
-            text = text.replace(/```([a-z]*)\n([\s\S]*?)\n```/g, (match, lang, code) => '<pre><code class="language-' + lang + '">' + code + '</code></pre>');
-            text = text.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank">$1</a>');
-            text = text.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:10px 0;">');
-            text = text.replace(/^\-\-\-$/gm, '<hr>');
-            text = text.replace(/^> (.*?)(<br>|$)/gm, '<blockquote>$1</blockquote>');
-            return text;
-        }
+ // 🔧 Esto convierte \n en saltos de línea reales (si vienen escapados)
+    text = text.replace(/\\n/g, '\n');
+
+    // 👇 Esto ya lo tenías y está perfecto
+    text = text.replace(/\n\n+/g, '</p><p>');
+    text = text.replace(/\n/g, '<br>');
+    text = '<p>' + text + '</p>';
+
+    // Y luego tus reemplazos Markdown
+   text = text.replace(/^### (.*)$/gm, '<h3>$1</h3>');
+text = text.replace(/^## (.*)$/gm, '<h2>$1</h2>');
+text = text.replace(/^# (.*)$/gm, '<h1>$1</h1>');
+    text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
+    text = text.replace(/^\d+\. (.*?)(<br>|$)/gm, '<li>$1</li>');
+    text = text.replace(/(<li>.*<\/li>)+/g, match => '<ol>' + match + '</ol>');
+// Detectar tablas en formato Markdown y convertirlas
+text = text.replace(/\n\|(.+)\|\n\|([-\s|:]+)\|\n((\|.*\|\n?)+)/g, (match, headers, dividers, rows) => {
+    const headerCells = headers.trim().split('|').map(cell => `<th>${cell.trim()}</th>`).join('');
+    const rowLines = rows.trim().split('\n');
+    const rowCells = rowLines.map(line => {
+        const cells = line.trim().split('|').map(cell => `<td>${cell.trim()}</td>`).join('');
+        return `<tr>${cells}</tr>`;
+    }).join('');
+    return `<table><thead><tr>${headerCells}</tr></thead><tbody>${rowCells}</tbody></table>`;
+});
+
+    return text;
+              }
 
         // Initialize the app
         init();
