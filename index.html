@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>A S C L E P I O</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <style>
         :root {
             --primary-bg: #ffffff;
@@ -1185,6 +1186,24 @@
             0% { transform: translateX(-100%) rotate(45deg); }
             100% { transform: translateX(100%) rotate(45deg); }
         }
+.message-markdown table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 12px 0;
+}
+
+.message-markdown th,
+.message-markdown td {
+    border: 1px solid var(--border-color);
+    padding: 8px 12px;
+    text-align: left;
+}
+
+.message-markdown th {
+    background-color: var(--secondary-bg);
+    font-weight: bold;
+}
+
     </style>
 </head>
 <body>
@@ -2046,29 +2065,37 @@
             sendMessage();
         }
 
-        function formatText(text) {
-            text = text.replace(/\\n/g, '\n');
-            text = text.replace(/\n\n+/g, '</p><p>');
-            text = text.replace(/\n/g, '<br>');
-            text = '<p>' + text + '</p>';
-            text = text.replace(/^### (.*)$/gm, '<h3>$1</h3>');
-            text = text.replace(/^## (.*)$/gm, '<h2>$1</h2>');
-            text = text.replace(/^# (.*)$/gm, '<h1>$1</h1>');
-            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            text = text.replace(/\*(.*?)\*/g, '<em>$1</em>');
-            text = text.replace(/^\d+\. (.*?)(<br>|$)/gm, '<li>$1</li>');
-            text = text.replace(/(<li>.*<\/li>)+/g, match => '<ol>' + match + '</ol>');
-            text = text.replace(/\n\|(.+)\|\n\|([-\s|:]+)\|\n((\|.*\|\n?)+)/g, (match, headers, dividers, rows) => {
-                const headerCells = headers.trim().split('|').map(cell => `<th>${cell.trim()}</th>`).join('');
-                const rowLines = rows.trim().split('\n');
-                const rowCells = rowLines.map(line => {
-                    const cells = line.trim().split('|').map(cell => `<td>${cell.trim()}</td>`).join('');
-                    return `<tr>${cells}</tr>`;
-                }).join('');
-                return `<table><thead><tr>${headerCells}</tr></thead><tbody>${rowCells}</tbody></table>`;
-            });
-            return text;
+      function formatText(text) {
+    if (typeof text !== 'string') return text;
+
+    // Intenta detectar si el contenido es un JSON plano tipo: "texto\ntexto"
+    try {
+        const parsed = JSON.parse(text);
+        if (typeof parsed === 'string') {
+            text = parsed;
         }
+    } catch (e) {
+        // No era JSON, no pasa nada
+    }
+
+    // Reemplaza los "\n" literales por saltos reales
+    const cleanedText = text.replace(/\\n/g, '\n');
+
+    // Usa marked para renderizar como Markdown
+    if (typeof marked !== 'undefined') {
+        marked.setOptions({
+            gfm: true,
+            breaks: true,
+            headerIds: false
+        });
+        const html = marked.parse(cleanedText);
+        return `<div class="message-markdown">${html}</div>`;
+    }
+
+    return `<p>${cleanedText}</p>`;
+}
+
+
 
         init();
     </script>
