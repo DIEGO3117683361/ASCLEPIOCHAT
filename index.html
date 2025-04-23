@@ -1741,11 +1741,16 @@
             } else {
                 const typingIndicator = showTypingIndicator();
                 try {
-                    const response = await fetch('https://magicloops.dev/api/loop/1f758d92-e471-4272-b993-b7db9f72a008/run', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ question: fullMessageText })
-                    });
+                   const conversationHistory = currentChat.messages
+    .map(msg => `${msg.sender === 'user' ? 'Usuario' : 'Asclepio'}: ${msg.text}`)
+    .join('\n');
+
+const response = await fetch('https://magicloops.dev/api/loop/1f758d92-e471-4272-b993-b7db9f72a008/run', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ question: conversationHistory + '\nUsuario: ' + messageText })
+});
+
                     const responseData = await response.json();
                     const botResponse = responseData.answer || JSON.stringify(responseData);
                     const botMessage = { sender: 'bot', text: botResponse, timestamp: new Date().toISOString() };
