@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="es" data-theme="dark">
 <head>
@@ -13,7 +14,7 @@
             --text-primary: #1d1d1f;
             --accent: #828282;
             --border-color: #d2d2d7;
-            --message-bg: #f0f0f5;
+            --message-bg: #ffffff;
             --user-message-bg: #f5f2ed;
             --user-message-text: #000000;
             --vision-gradient: linear-gradient(45deg, #696969, #000000, #373737, #000000);
@@ -31,7 +32,7 @@
             --text-primary: #f5f5f7;
             --accent: #828282;
             --border-color: #48484a;
-            --message-bg: #292928;
+            --message-bg:#1d1d1f;
             --user-message-bg: #2e2e2e;
             --user-message-text: #ffffff;
             --vision-gradient: linear-gradient(45deg, #a1a1a1, #4a4a4a, #7d7d7d, #4a4a4a);
@@ -1220,6 +1221,26 @@
 .message-markdown tr:hover td {
     background-color: rgba(0, 0, 0, 0.03);
 }
+.message-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.message.user-message {
+  align-self: flex-end;
+}
+
+.message.bot-message {
+  align-self: flex-start;
+}
+.settings-button svg.brain-icon {
+  stroke: var(--text-primary);
+  transition: stroke 0.3s ease;
+}
 
     </style>
 </head>
@@ -1269,7 +1290,22 @@
             <button class="menu-button" onclick="toggleSidebar()">☰</button>
             <div class="app-title">A S C L E P I O</div>
             <div class="settings-menu">
-                <button class="settings-button" onclick="toggleSettings()">⚙️</button>
+                <button class="settings-button" onclick="toggleSettings()" aria-label="Ajustes">
+  <svg class="brain-icon" xmlns="http://www.w3.org/2000/svg"
+       width="24" height="24" viewBox="0 0 24 24" fill="none"
+       stroke="currentColor" stroke-width="2" stroke-linecap="round"
+       stroke-linejoin="round">
+    <path d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"/>
+    <path d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"/>
+    <path d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"/>
+    <path d="M17.599 6.5a3 3 0 0 0 .399-1.375"/>
+    <path d="M6.003 5.125A3 3 0 0 0 6.401 6.5"/>
+    <path d="M3.477 10.896a4 4 0 0 1 .585-.396"/>
+    <path d="M19.938 10.5a4 4 0 0 1 .585.396"/>
+    <path d="M6 18a4 4 0 0 1-1.967-.516"/>
+    <path d="M19.967 17.484A4 4 0 0 1 18 18"/>
+  </svg>
+</button>
                 <div class="settings-dropdown" id="settingsDropdown">
                     <div class="dropdown-item" onclick="toggleTheme()">
                         <span>🔆</span> Cambiar tema
@@ -1284,7 +1320,10 @@
             </div>
         </header>
 
-        <div class="chat-container" id="messages">
+      <div class="chat-container">
+  <div class="message-wrapper" id="messages"></div>
+</div>
+
             <div class="attachment-indicator" id="attachmentIndicator">
                 <span class="attachment-name" id="attachmentName"></span>
                 <button class="attachment-close" onclick="clearAttachment()">✕</button>
@@ -1306,10 +1345,16 @@
                 <div class="input-box">
                     <input type="text" class="message-input" id="userInput" placeholder="Pregunta lo que quieras" autocomplete="off">
                     <button class="send-button" onclick="sendMessage()">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M12 19V5M5 12H19" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                        </svg>
-                    </button>
+  <svg xmlns="http://www.w3.org/2000/svg"
+       width="24" height="24" viewBox="0 0 24 24"
+       fill="none" stroke="currentColor" stroke-width="2"
+       stroke-linecap="round" stroke-linejoin="round"
+       class="lucide lucide-send-icon lucide-send">
+    <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/>
+    <path d="m21.854 2.147-10.94 10.939"/>
+  </svg>
+</button>
+
                 </div>
                 <input type="file" id="attachmentInput" accept=".pdf,image/*" style="display: none;">
             </div>
@@ -1395,7 +1440,7 @@
                 } else if (file.type.startsWith('image/')) {
                     extractedText = await extractTextFromImage(file);
                 } else {
-                    alert('Por favor, selecciona un PDF o una imagen.');
+                    alert('Por favor, selecciona un PDF o una imagen que contenga texto.');
                     return;
                 }
 
@@ -1427,7 +1472,7 @@
                 <div class="doc-scanner">
                     <div class="scanner-bar"></div>
                 </div>
-                <div class="loading-text">Leyendo archivos...</div>
+                <div class="loading-text">Leyendo tus archivos...</div>
             `;
             messagesContainer.appendChild(processingDiv);
             scrollToBottom();
@@ -1536,13 +1581,13 @@
                                 </svg>
                                 Crea una imagen
                             </button>
-                            <button class="welcome-btn welcome-btn-code" onclick="setInputText('Escribir un código')">
+                            <button class="welcome-btn welcome-btn-code" onclick="setInputText('Escribir un código de programación')">
                                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M10 20L14 4M18 8L22 12L18 16M6 16L2 12L6 8" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
-                                Crear un código
+                                Escribir código
                             </button>
-                            <button class="welcome-btn welcome-btn-analyze" onclick="setInputText('Analiza el texto y dame un resumen en puntos clave')">
+                            <button class="welcome-btn welcome-btn-analyze" onclick="setInputText('Analiza a profundidad el contenido de este archivo. Puedes usar líneas divisorias, tablas, Puntos clave y conclusiones. Lo importante es que se entienda bien, con un análisis completo y bien desarrollado del contenido.')">
                                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                     <path d="M12 8V12L15 15" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -1746,7 +1791,7 @@
                 } catch (error) {
                     const errorMessage = { 
                         sender: 'bot', 
-                        text: `No se pudo generar la imagen. Detalles: ${error.message}`, 
+                        text: `¡Uy! La imagen se nos escapó como si tuviera patas 🎨💨. No se pudo crear esta vez, pero puedes intentar de nuevo en un rato… o empezar un nuevo chat y darle otra oportunidad a la inspiración digital 💫📷.. Detalles: ${error.message}`, 
                         timestamp: new Date().toISOString() 
                     };
                     currentChat.messages.push(errorMessage);
@@ -1775,7 +1820,7 @@ const response = await fetch('https://magicloops.dev/api/loop/1f758d92-e471-4272
                     currentChat.messages.push(botMessage);
                     typeMessage(botMessage);
                 } catch (error) {
-                    const errorMessage = { sender: 'bot', text: "Error al conectar con la API. Por favor intenta nuevamente.", timestamp: new Date().toISOString() };
+                    const errorMessage = { sender: 'bot', text: "¡Ups! Asclepio se fue a tomar un cafecito con el Wi-Fi ☕📡... Parece que la conexión se nos resbaló como jabón en regadera. Intenta de nuevo en unos segundos, o intenta crear un nuevo chat y cruzamos los dedos", timestamp: new Date().toISOString() };
                     currentChat.messages.push(errorMessage);
                     typeMessage(errorMessage);
                 } finally {
