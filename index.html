@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="es" data-theme="dark">
 <head>
@@ -1262,6 +1260,116 @@
   box-shadow: 0 0 8px rgba(77, 158, 247, 0.6); /* Sombra azul */
   transition: all 0.3s ease; /* Transición suave */
 }
+.file-reading-indicator {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 15px;
+    background: #f0f4ff;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    font-family: 'Arial', sans-serif;
+}
+.smart-eye {
+    width: 32px;
+    height: 32px;
+    position: relative;
+}
+.eye-container {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(145deg, #3a7bd5, #00d2ff);
+    border-radius: 50%;
+    position: relative;
+    overflow: hidden;
+    box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+    animation: float 3s ease-in-out infinite;
+}
+.eyeball {
+    width: 16px;
+    height: 16px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 5px rgba(0,0,0,0.5);
+    animation: look-around 4s infinite alternate;
+}
+.pupil {
+    width: 8px;
+    height: 8px;
+    background: #222;
+    border-radius: 50%;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: pupil-move 2s infinite alternate;
+}
+.eyelid {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(145deg, #3a7bd5, #00d2ff);
+    border-radius: 50%;
+    top: -100%;
+    animation: blink 5s infinite;
+}
+.scanning-beam {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: rgba(255,255,255,0.7);
+    top: 0;
+    left: 0;
+    transform-origin: top center;
+    animation: scan 2s infinite;
+    box-shadow: 0 0 10px rgba(255,255,255,0.8);
+}
+.loading-text {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+    position: relative;
+}
+.loading-text::after {
+    content: '...';
+    position: absolute;
+    animation: dots 1.5s infinite steps(4, end);
+}
+@keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+@keyframes look-around {
+    0% { transform: translate(-30%, -50%); }
+    25% { transform: translate(-70%, -50%); }
+    50% { transform: translate(-50%, -30%); }
+    75% { transform: translate(-50%, -70%); }
+    100% { transform: translate(-30%, -50%); }
+}
+@keyframes pupil-move {
+    0%, 100% { transform: translate(-30%, -30%); }
+    25% { transform: translate(-70%, -30%); }
+    50% { transform: translate(-70%, -70%); }
+    75% { transform: translate(-30%, -70%); }
+}
+@keyframes blink {
+    0%, 45%, 50%, 55%, 100% { top: -100%; }
+    48%, 52% { top: 0; }
+}
+@keyframes scan {
+    0% { transform: rotate(0deg); opacity: 0; }
+    10% { opacity: 1; }
+    100% { transform: rotate(360deg); opacity: 0; }
+}
+@keyframes dots {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+}
 
     </style>
 </head>
@@ -1504,18 +1612,27 @@
         }
 
         function showDocumentProcessingAnimation() {
-            const processingDiv = document.createElement('div');
-            processingDiv.className = 'document-processing';
-            processingDiv.innerHTML = `
-                <div class="doc-scanner">
-                    <div class="scanner-bar"></div>
+    const processingDiv = document.createElement('div');
+    processingDiv.className = 'document-processing';
+    processingDiv.innerHTML = `
+        <div class="file-reading-indicator">
+            <div class="smart-eye">
+                <div class="eye-container">
+                    <div class="scanning-beam"></div>
+                    <div class="eyeball">
+                        <div class="pupil"></div>
+                    </div>
+                    <div class="eyelid"></div>
                 </div>
-                <div class="loading-text">Leyendo tus archivos...</div>
-            `;
-            messagesContainer.appendChild(processingDiv);
-            scrollToBottom();
-            return processingDiv;
-        }
+            </div>
+            <span class="loading-text">Procesando archivo</span>
+        </div>
+    `;
+    messagesContainer.appendChild(processingDiv);
+    scrollToBottom();
+    return processingDiv;
+}
+
 
         function hideDocumentProcessingAnimation(element) {
             if (element) {
