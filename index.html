@@ -1835,7 +1835,7 @@ if (isVisionMode) {
     } catch (error) {
         const errorMessage = {
             sender: 'bot',
-            text: "¡Uy! No se pudo crear la imagen. Intenta más tarde. Detalles: " + error.message,
+            text: "¡Uy! La imagen se nos escapó como si tuviera patas 🎨💨. No se pudo crear esta vez, pero puedes intentar de nuevo en un rato… o empezar un nuevo chat y darle otra oportunidad a la inspiración digital 💫📷. Detalles: " + error.message,
             timestamp: new Date().toISOString()
         };
         currentChat.messages.push(errorMessage);
