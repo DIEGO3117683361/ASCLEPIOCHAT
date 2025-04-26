@@ -1241,6 +1241,27 @@
   stroke: var(--text-primary);
   transition: stroke 0.3s ease;
 }
+.vision-button, .msearch-button {
+  background-color: var(--secondary-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.vision-button:hover, .msearch-button:hover {
+  background-color: var(--primary-bg);
+}
+.active-button {
+  border: 2px solid #4D9EF7; /* Borde azul */
+  background-color: var(--primary-bg); /* Fondo personalizado */
+  color: var(--text-primary); /* Color del texto */
+  box-shadow: 0 0 8px rgba(77, 158, 247, 0.6); /* Sombra azul */
+  transition: all 0.3s ease; /* Transición suave */
+}
 
     </style>
 </head>
@@ -1330,32 +1351,49 @@
             </div>
         </div>
 
-        <div class="input-container" id="inputContainer">
-            <div class="image-generation-confirmation hidden" id="imageGenerationConfirmation">
-                <div class="confirmation-text">¿Quieres que Asclepio te responda con un concepto visual?</div>
-                <button class="confirm-button" onclick="confirmImageGeneration()">✓</button>
-                <button class="cancel-button" onclick="cancelImageGeneration()">✕</button>
-            </div>
-            <div class="input-wrapper">
-                <button class="attachment-button" id="attachmentButton" onclick="toggleAttachment()">
-                    <svg id="attachmentIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 4V20M4 12H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
-                <div class="input-box">
-                    <input type="text" class="message-input" id="userInput" placeholder="Pregunta lo que quieras" autocomplete="off">
-                    <button class="send-button" onclick="sendMessage()">
-  <svg xmlns="http://www.w3.org/2000/svg"
-       width="24" height="24" viewBox="0 0 24 24"
-       fill="none" stroke="currentColor" stroke-width="2"
-       stroke-linecap="round" stroke-linejoin="round"
-       class="lucide lucide-send-icon lucide-send">
-    <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/>
-    <path d="m21.854 2.147-10.94 10.939"/>
-  </svg>
-</button>
+       <div class="input-container" id="inputContainer">
+  <!-- ⚠️ Mantener el mensaje flotante para Visión -->
+  <div class="image-generation-confirmation hidden" id="imageGenerationConfirmation">
+    <div class="confirmation-text">¿Quieres que Asclepio te responda con un concepto visual?</div>
+    <button class="confirm-button" onclick="confirmImageGeneration()">✓</button>
+    <button class="cancel-button" onclick="cancelImageGeneration()">✕</button>
+  </div>
 
-                </div>
+  <!-- 📝 Caja de texto y enviar -->
+  <div class="input-wrapper" style="flex-direction: column; gap: 10px;">
+    <div class="input-box" style="width: 100%;">
+      <input type="text" class="message-input" id="userInput" placeholder="Pregunta lo que quieras" autocomplete="off" />
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; margin-top: 10px;">
+  <!-- Botones izquierda -->
+  <div style="display: flex; gap: 10px;">
+  <button class="msearch-button" id="msearchButton" onclick="toggleActiveButton('msearchButton')">🌐 Msearch</button>
+  <button class="vision-button" id="visionButton" onclick="toggleActiveButton('visionButton')">VISION</button>
+</div>
+
+
+  <!-- Botones derecha -->
+  <div style="display: flex; gap: 10px;">
+    <button class="attachment-button" id="attachmentButton" onclick="toggleAttachment()">
+      <svg id="attachmentIcon" width="20" height="20" viewBox="0 0 24 24" fill="none"
+           xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 4V20M4 12H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+      </svg>
+    </button>
+
+    <button class="send-button" onclick="sendMessage()">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+           stroke-linejoin="round">
+        <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/>
+        <path d="m21.854 2.147-10.94 10.939"/>
+      </svg>
+    </button>
+  </div>
+</div>
+  </div>
+</div>
+
                 <input type="file" id="attachmentInput" accept=".pdf,image/*" style="display: none;">
             </div>
         </div>
@@ -1625,6 +1663,10 @@
                 sidebar.style.boxShadow = '10px 0 20px rgba(0, 0, 0, 0.1)';
             }
         }
+function toggleActiveButton(buttonId) {
+  const button = document.getElementById(buttonId);
+  button.classList.toggle('active-button'); // Alterna la clase 'active-button'
+}
 
         function toggleSidebar() {
             sidebar.classList.toggle('sidebar-visible');
