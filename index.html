@@ -1809,40 +1809,41 @@ function toggleActiveButton(buttonId) {
             renderMessage(userMessage);
             userInput.value = '';
 
-            if (generateImageFlag) {
-                const loadingElement = showImageLoadingAnimation();
-                try {
-                    const imageUrl = await generateImage(fullMessageText);
-                    const imageHtml = `
-                        <div class="generated-image-container">
-                            <img src="${imageUrl}" alt="Imagen generada por Asclepio" class="generated-image">
-                            <button class="download-button" onclick="downloadImage('${imageUrl}')">Descargar imagen</button>
-                            <div class="image-prompt">Prompt: "${messageText}"</div>
-                        </div>
-                    `;
-                    const botMessage = { 
-                        sender: 'bot', 
-                        text: imageHtml, 
-                        timestamp: new Date().toISOString(),
-                        isImage: true,
-                        imageUrl: imageUrl
-                    };
-                    currentChat.messages.push(botMessage);
-                    renderMessage(botMessage);
-                    setupImageInteractions();
-                } catch (error) {
-                    const errorMessage = { 
-                        sender: 'bot', 
-                        text: `¡Uy! La imagen se nos escapó como si tuviera patas 🎨💨. No se pudo crear esta vez, pero puedes intentar de nuevo en un rato… o empezar un nuevo chat y darle otra oportunidad a la inspiración digital 💫📷.. Detalles: ${error.message}`, 
-                        timestamp: new Date().toISOString() 
-                    };
-                    currentChat.messages.push(errorMessage);
-                    renderMessage(errorMessage);
-                } finally {
-                    hideImageLoadingAnimation(loadingElement);
-                    generateImageFlag = false;
-                }
-            } else {
+            const isVisionMode = document.getElementById('visionButton').classList.contains('active-button');
+
+if (isVisionMode) {
+    const loadingElement = showImageLoadingAnimation();
+    try {
+        const imageUrl = await generateImage(fullMessageText);
+        const imageHtml = `
+            <div class="generated-image-container">
+                <img src="${imageUrl}" alt="Imagen generada por Asclepio" class="generated-image">
+                <button class="download-button" onclick="downloadImage('${imageUrl}')">Descargar imagen</button>
+                <div class="image-prompt">Prompt: "${messageText}"</div>
+            </div>
+        `;
+        const botMessage = {
+            sender: 'bot',
+            text: imageHtml,
+            timestamp: new Date().toISOString(),
+            isImage: true,
+            imageUrl: imageUrl
+        };
+        currentChat.messages.push(botMessage);
+        renderMessage(botMessage);
+        setupImageInteractions();
+    } catch (error) {
+        const errorMessage = {
+            sender: 'bot',
+            text: "¡Uy! No se pudo crear la imagen. Intenta más tarde. Detalles: " + error.message,
+            timestamp: new Date().toISOString()
+        };
+        currentChat.messages.push(errorMessage);
+        renderMessage(errorMessage);
+    } finally {
+        hideImageLoadingAnimation(loadingElement);
+    }
+} else {
                 const typingIndicator = showTypingIndicator();
                 try {
                    const conversationHistory = currentChat.messages
@@ -2163,17 +2164,16 @@ const response = await fetch('https://magicloops.dev/api/loop/1f758d92-e471-4272
             imageGenerationConfirmation.classList.add('hidden');
         }
 
-        function confirmImageGeneration() {
-            generateImageFlag = true;
-            hideImageGenerationConfirmation();
-            sendMessage();
-        }
+       function confirmImageGeneration() {
+    const visionBtn = document.getElementById('visionButton');
+    visionBtn.classList.add('active-button'); // activa el botón de visión
+    imageGenerationConfirmation.classList.add('hidden'); // oculta el anuncio
+}
 
+ 
         function cancelImageGeneration() {
-            generateImageFlag = false;
-            hideImageGenerationConfirmation();
-            sendMessage();
-        }
+    imageGenerationConfirmation.classList.add('hidden'); // solo oculta el anuncio
+}
 
       function formatText(text) {
     if (typeof text !== 'string') return text;
