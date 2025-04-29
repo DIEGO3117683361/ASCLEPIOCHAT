@@ -1884,7 +1884,7 @@
                                 </svg>
                                 Escribir código
                             </button>
-                            <button class="welcome-btn welcome-btn-analyze" onclick="setInputText('Analiza a profundidad el contenido de este archivo. Puedes usar líneas divisorias, tablas, Puntos clave y conclusiones. Lo importante es que se entienda bien, con un análisis completo y bien desarrollado del contenido.')">
+                            <button class="welcome-btn welcome-btn-analyze" onclick="setInputText('Analiza a profundidad el contenido de este archivo define que tipo de información contiene y en base a eso explíca y uedes usar líneas divisorias, tablas, Puntos clave y conclusiones. Lo importante es que se entienda bien, con un análisis completo y bien desarrollado del contenido.')">
                                 <svg class="btn-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                     <path d="M12 8V12L15 15" stroke="#000" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -2054,18 +2054,18 @@ function toggleActiveButton(buttonId) {
 if (currentChat.messages.length === 0) {
   const tone = localStorage.getItem('asclepioTone');
   if (tone === 'profesional') {
-    fullMessageText = "Responde siempre con un tono profesional y claro. Utiliza un lenguaje formal pero accesible, evitando jargon innecesario.\n\nSi la información requiere estructuración compleja (comparaciones, datos numéricos, pasos detallados, etc.), puedes organizarla en tablas o con líneas divisoras gráficas para mejorar la legibilidad. Sin embargo, evítalas si el contenido es breve o no lo amerita.\n\nPrioriza la claridad y la eficiencia en tus respuestas, adaptándote al contexto de la consulta.\n\n" + fullMessageText;
+    fullMessageText = "Responde siempre con un tono profesional y claro, siempre de manera muy elegante. Utiliza un lenguaje formal pero accesible, evitando jargon innecesario.\n\nSi la información requiere estructuración compleja (comparaciones, datos numéricos, pasos detallados, etc.), puedes organizarla en tablas o con líneas divisoras gráficas para mejorar la legibilidad. Sin embargo, evítalas si el contenido es breve o no lo amerita.\n\nPrioriza la claridad y la eficiencia en tus respuestas, adaptándote al contexto de la consulta.\n\n" + fullMessageText;
   } else if (tone === 'medico') {
-    fullMessageText = "Responde todo como un experto médico, utilizando terminología clínica precisa y basándote en evidencia científica. Mantén un tono profesional y accesible para colegas del ámbito sanitario, puedes emplear emojis solo si refuerzan la claridad, además usa tablas, líneas divisoras para mejorar la legibilidad en caso de ser necesarias\n\n" + fullMessageText;
+    fullMessageText = "Responde todo como un experto médico, utilizando terminología clínica precisa y basándote en evidencia científica. Mantén un tono profesional y accesible para colegas del ámbito sanitario, puedes emplear emojis solo si refuerzan la claridad, además usa tablas, líneas divisoras para mejorar la legibilidad en caso de ser necesarias además cuando se pregunte un tema en específico comparte links en donde el usuario pueda ampliar esa información\n\n" + fullMessageText;
   } else if (tone === 'amable') {
-    fullMessageText = "Quiero que respondas como un amigo experto 🤓: claro, súper amable y 100% enfocado en que entienda todo fácilmente. Usa explicaciones sencillas (sin tecnicismos innecesarios), emojis para hacerlo más divertido 🚀✨ y tablas o gráficos solo si ayudan a visualizar mejor (ej.: pasos, comparaciones). Siempre verifica si entendí, ofreciendo ampliar info con frases como '¿Quedó claro o lo explico de otra forma? 🔍' o '¿Quieres que profundice en algo? 🛠️', y si algo es complejo, simplifícalo como si fuera una charla entre amigos. Prioriza hacerme sentir que aprendo sin esfuerzo, usando ejemplos cotidianos y un tono motivador (ej.: '¡Buena pregunta! 👀 Aquí va el dato clave…'). Si dudas, elige la opción más clara, no la más técnica. ¡Haz que el conocimiento se sienta ligero y entretenido! 😎\n\n" + fullMessageText;
+    fullMessageText = "Quiero que respondas como un amigo experto 🤓: claro, súper amable y 100% enfocado en que entienda todo fácilmente. Usa explicaciones sencillas (sin tecnicismos innecesarios), emojis para hacerlo más divertido 🚀✨ y tablas o gráficos solo si ayudan a visualizar mejor (ej.: pasos, comparaciones). También verifica si entendí, ofreciendo ampliar info con frases como '¿Quedó claro o lo explico de otra forma? 🔍' o '¿Quieres que profundice en algo? 🛠️', y si algo es complejo, simplifícalo como si fuera una charla entre amigos. Prioriza hacerme sentir que aprendo sin esfuerzo, usando ejemplos cotidianos y un tono motivador (ej.: '¡Buena pregunta! 👀 Aquí va el dato clave…'). Si dudas, elige la opción más clara, no la más técnica. ¡Haz que el conocimiento se sienta ligero y entretenido! 😎\n\n" + fullMessageText;
   }
 }
 
             let hasAttachment = false;
 
             if (lastExtractedText) {
-                fullMessageText = `${messageText}\n\n[Texto extraído del archivo]:\n${lastExtractedText}`;
+                fullMessageText = `${messageText}\n\n[MENSAJE PARA MEJOR ENTENDIMIENTO: EL USUARIO CARGÓ UN ARCHIVO Y DE SE ARCHIVO SE EXTRAJO EL SIGUIENTE TEXTO ASÍ QUE LA PREGUNTA DEBE RESPONDERSE EN BASE A ESTE TEXTO ANTES DE RESPONDER ANALÍZALO Y SI POR EJEMPLO CONTIENE PREGUNTAS RESUELVELAS DE MANERA ORDENADA Y SOLO CONTIENE INFORMACIÓN SOBRE UN TEMA RESPONDE LA PREGUNTA DEL USUARIO O HAZ UN RESUMEN]:\n${lastExtractedText}`;
                 hasAttachment = true;
             }
 
