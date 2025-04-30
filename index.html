@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es" data-theme="dark">
 <head>
@@ -52,7 +53,7 @@
             color: var(--text-primary);
             display: flex;
             height: 100vh;
-            overflow: hidden;
+            overflow: auto; /* ✅ o directamente elimínalo si no es esencial */
         }
 
         .sidebar {
@@ -1195,7 +1196,40 @@
     border: 1px solid var(--border-color);
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
+    background-color: var(--primary-bg);
+}
+
+.message-markdown th,
+.message-markdown td {
+    padding: 12px 16px;
+    text-align: left;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease;
+}
+
+.message-markdown th {
+    background-color: var(--secondary-bg);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+}
+
+.message-markdown tr:hover td {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.message table {
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-collapse: separate;
+  border-spacing: 0;
+  border-radius: 12px;
+  margin: 16px 0;
 }
 
 .message-markdown th,
@@ -1472,6 +1506,54 @@
   outline: none;
   box-shadow: 0 0 0 2px rgba(77, 158, 247, 0.4);
 }
+.table-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.table-modal.visible {
+  opacity: 1;
+  pointer-events: all;
+}
+
+.table-modal-content {
+  background: var(--primary-bg);
+  max-width: 90%;
+  max-height: 80%;
+  overflow: auto;
+  padding: 20px;
+  border-radius: 16px;
+  position: relative;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+.table-modal-content table {
+  width: 100%;
+}
+
+.table-modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+.table-modal-content {
+  background: var(--message-bg);
+  padding: 30px;
+  border: 1px solid var(--border-color);
+}
 
     </style>
 </head>
@@ -1646,6 +1728,26 @@
     </div>
   </div>
 </div>
+<button id="scrollToBottomBtn" style="
+  display: none;
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  background-color: var(--secondary-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 50%;
+  padding: 10px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  z-index: 999;
+">
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none"
+       stroke="currentColor" stroke-width="2" stroke-linecap="round"
+       stroke-linejoin="round" class="lucide lucide-chevron-down">
+    <path d="m6 9 6 6 6-6"/>
+  </svg>
+</button>
 
     </main>
 
@@ -2516,7 +2618,43 @@ document.querySelectorAll('input[name="theme"]').forEach(radio => {
     localStorage.setItem('theme', theme);
   });
 });
+const scrollBtn = document.getElementById('scrollToBottomBtn');
+const chatContainer = document.querySelector('.chat-container');
+
+chatContainer.addEventListener('scroll', () => {
+  const atBottom = chatContainer.scrollHeight - chatContainer.scrollTop - chatContainer.clientHeight < 10;
+  scrollBtn.style.display = atBottom ? 'none' : 'block';
+});
+
+scrollBtn.addEventListener('click', () => {
+  chatContainer.scrollTo({ top: chatContainer.scrollHeight, behavior: 'smooth' });
+});
+function openTableModal(tableHtml) {
+  const modal = document.getElementById("tableModal");
+  const content = document.getElementById("tableModalContent");
+  content.innerHTML = `<div class="message-markdown">${tableHtml}</div>`;
+  modal.classList.add("visible");
+}
+
+function closeTableModal() {
+  document.getElementById("tableModal").classList.remove("visible");
+}
+
+// Delegar clic en tablas dentro del contenedor de mensajes
+messagesContainer.addEventListener("click", (e) => {
+  const clickedTable = e.target.closest("table");
+  if (clickedTable && messagesContainer.contains(clickedTable)) {
+    openTableModal(clickedTable.outerHTML);
+  }
+});
 
     </script>
+<div id="tableModal" class="table-modal">
+  <div class="table-modal-content">
+    <button class="table-modal-close" onclick="closeTableModal()">✕</button>
+    <div id="tableModalContent"></div>
+  </div>
+</div>
+
 </body>
 </html>
